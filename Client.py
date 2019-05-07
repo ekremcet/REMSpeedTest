@@ -5,53 +5,54 @@ ping_message = "REMREMREMREMREMREMREMREMREMREMREMREMREMREMREMREMREMREMREMREMREMR
 TEN_MB = 10500000
 
 
-def send_ping(s):
-    s.send(ping_message.encode("ascii"))
-    s.recv(1024)
+class Client:
+    def __init__(self, ip_addr, port):
+        self.server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_sock.connect((ip_addr, port))
 
+    def send_ping(self):
+        self.server_sock.send(ping_message.encode("ascii"))
+        self.server_sock.recv(1024)
 
-def receive_file(s):
-    with open("./10mbfile", "wb") as f:
-        t1 = time.time()
-        while True:
-            data = s.recv(1024)
-            if data == b'\x10':
-                break
-            f.write(data)
+    def download_test(self):
+        with open("./10mbfile", "wb") as f:
+            t1 = time.time()
+            while True:
+                data = self.server_sock.recv(1024)
+                if data == b'\x10':
+                    break
+                f.write(data)
 
-        t2 = time.time()
-        download_speed = round(((TEN_MB * 0.001) / (t2 - t1)) * 0.001)
-        s.send(str(download_speed).encode("ascii"))
-        print("Download test complete")
+            t2 = time.time()
+            download_speed = round(((TEN_MB * 0.001) / (t2 - t1)) * 0.001)
+            self.server_sock.send(str(download_speed).encode("ascii"))
+            print("Download test complete")
 
-def send_file(s):
-    file10mb = open("./10mbfile", "rb")
-    buff = file10mb.read()
-    # Send the file to client
-    t1 = time.time()
-    while buff:
-        s.send(buff)
+    def upload_test(self):
+        file10mb = open("./10mbfile", "rb")
         buff = file10mb.read()
-    s.send(b'\x10')  # Close signal
-    file10mb.close()
-    t2 = time.time()
-    upload_speed = round(((TEN_MB * 0.001) / (t2 - t1)) * 0.001)
-    print("Upload test complete")
+        # Send the file to client
+        t1 = time.time()
+        while buff:
+            self.server_sock.send(buff)
+            buff = file10mb.read()
+        self.server_sock.send(b'\x10')  # Close signal
+        file10mb.close()
+        t2 = time.time()
+        upload_speed = round(((TEN_MB * 0.001) / (t2 - t1)) * 0.001)
+        print("Upload test complete")
 
-
-def Main():
-    host = '10.200.49.116'
-    port = 12501
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((host, port))
-    while True:
+    def ping_test(self):
         for _ in range(10):
-            send_ping(s)
-        receive_file(s)
-        send_file(s)
-        break
-    s.close()
+            self.send_ping()
+
+    def run_tests(self):
+        self.ping_test()
+        self.download_test()
+        self.upload_test()
+        self.server_sock.close()
 
 
 if __name__ == '__main__':
-    Main()
+    client = Client('10.200.49.116', 12501)
+    client.run_tests()

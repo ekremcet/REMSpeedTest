@@ -1,10 +1,10 @@
 import socket
-import sys
 import time
 from _thread import start_new_thread
 
 MAX_BYTES = 1500
 TEN_MB = 10500000
+
 
 class Server:
     def __init__(self, ip_addr, port):
