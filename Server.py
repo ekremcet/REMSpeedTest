@@ -6,7 +6,6 @@ from _thread import start_new_thread
 
 FILE_SIZE = 25000000
 BUFFER_SIZE = 4096
-TEN_MB = 10000000
 ONE_MB = 1000000
 
 
@@ -19,6 +18,8 @@ class Server:
         self.generate_file()
 
     def generate_file(self):
+        # Generate 25 MB file with random strings in each run
+        # This is done to prevent caching
         data = self.generate_random_data(FILE_SIZE)
         with open("./downfile", "wb") as f:
             f.write(data.encode("ascii"))
@@ -31,9 +32,11 @@ class Server:
             client, client_addr = self.sock.accept()
             print("Connected to: " + str(client_addr[0]) + ":" + str(client_addr[1]))
             start_new_thread(self.client_thread, (client, ))
-        self.sock.close()
 
     def get_delay(self, client):
+        # Client sends a packet to server, server sends back a packet as soon as it recieves that
+        # Time passed between 2 received packets are calculated and divided by two to obtain RTT
+        # This process is repeated 10 times
         print("Delay Test")
         rtt = 0.0
         for _ in range(10):
@@ -86,7 +89,7 @@ class Server:
                 break
 
         t2 = time.time()
-        upload_speed = str(round(((FILE_SIZE * 0.001) / (t2 - t1)) * 0.001))
+        upload_speed = str(round(((FILE_SIZE * 0.001) / (t2 - t1)) * 0.001) * 8)
         print("Upload speed: %s Mbps" % upload_speed)
 
         return upload_speed
