@@ -1,9 +1,13 @@
 import socket
+import string
+import random
 import time
 from _thread import start_new_thread
 
-MAX_BYTES = 1500
-TEN_MB = 10500000
+FILE_SIZE = 25000000
+BUFFER_SIZE = 4096
+TEN_MB = 10000000
+ONE_MB = 1000000
 
 
 class Server:
@@ -12,6 +16,12 @@ class Server:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_addr = ip_addr
+        self.generate_file()
+
+    def generate_file(self):
+        data = self.generate_random_data(FILE_SIZE)
+        with open("./downfile", "wb") as f:
+            f.write(data.encode("ascii"))
 
     def start_server(self):
         self.sock.bind((self.server_addr, self.port))
@@ -24,10 +34,11 @@ class Server:
         self.sock.close()
 
     def get_delay(self, client):
+        print("Delay Test")
         rtt = 0.0
         for _ in range(10):
             rtt += self.get_pings(client)
-        ping = rtt / 10
+        ping = rtt / 20
         print("Ping: %.2f" % ping)
 
         return ping
@@ -35,52 +46,61 @@ class Server:
     @staticmethod
     def get_pings(client):
         send_time = time.time()
-        msg = client.recv(MAX_BYTES)
+        msg = client.recv(BUFFER_SIZE)
         client.send(msg)
         recv_time = time.time()
 
         return (recv_time - send_time) * 1000
 
     @staticmethod
+    def generate_random_data(size):
+        alphabet = string.ascii_uppercase + string.ascii_lowercase
+
+        return ''.join(random.choice(alphabet) for _ in range(size))
+
+    @staticmethod
     def get_download_speed(client):
-        file10mb = open("./10mb.bin", "rb")
-        buff = file10mb.read()
+        print("Download Test")
+        download_file = open("./downfile", "rb")
+        buff = download_file.read()
         # Send the file to client
         while buff:
             client.send(buff)
-            buff = file10mb.read()
-        client.send(b'\x10')  # Close signal for file
-        file10mb.close()
-        download_speed = client.recv(1024).decode("ascii")
+            buff = download_file.read()
+
+        download_file.close()
+        download_speed = client.recv(BUFFER_SIZE).decode("ascii")
         print("Download speed %s Mbps" % download_speed)
 
         return download_speed
 
     @staticmethod
     def get_upload_speed(client):
-        with open("./10mbuploaded", "wb") as f:
-            t1 = time.time()
-            while True:
-                data = client.recv(1024)
-                if data == b'\x10':
-                    break
-                f.write(data)
+        print("UPLOAD")
+        bytes_recieved = 0
+        t1 = time.time()
+        while True:
+            data = client.recv(BUFFER_SIZE)
+            bytes_recieved += len(data)
+            if bytes_recieved >= FILE_SIZE:
+                break
 
-            t2 = time.time()
-            upload_speed = str(round(((TEN_MB * 0.001) / (t2 - t1)) * 0.001))
-            print("Upload speed: %s Mbps" % upload_speed)
+        t2 = time.time()
+        upload_speed = str(round(((FILE_SIZE * 0.001) / (t2 - t1)) * 0.001))
+        print("Upload speed: %s Mbps" % upload_speed)
 
-            return upload_speed
+        return upload_speed
 
     def client_thread(self, client):
-        while True:
-            self.get_delay(client)
-            self.get_download_speed(client)
-            self.get_upload_speed(client)
-            break
+        request = client.recv(4).decode("ascii")
+        requests = {"Ping": self.get_delay,
+                    "Down": self.get_download_speed,
+                    "Upld": self.get_upload_speed}
+        requests[request](client)
+        client.shutdown(socket.SHUT_RDWR)
         client.close()
 
 
 if __name__ == '__main__':
-    server = Server("10.200.49.116", 12501)
+    server = Server("0.0.0.0", 33333)
     server.start_server()
