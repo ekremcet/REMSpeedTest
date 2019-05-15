@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}REMSpeed{% endblock title %}
+
+{% block content %}
+<div class="jumbotron" style="width:100%">
+
+   <div class="modal-body row">
+   <div class="col-md-5">
+
+</div> 
+  <div class="col-md-2">
+   <form onsubmit="startTest(); return false;">
+   
+    <input type="submit" class="btn btn-primary btn" value="START" name="mybtn">
+    {% load static %}
+     <img class="img-responsive" id="loading" src='{% static "img/spinner.gif" %}' alt="loading" style="visibility: hidden;">
+  </form>
+   
+         </div>
+   <div class="col-md-5">
+
+         </div>
+
+</div>
+{% include 'results.html' %}
+</div>
+
+{% block script %}
+
+<script type="text/javascript">
+    var FILE_SIZE = 10000050;
+
+    function generateRandomString(size) {
+      const chars = [..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+      return [...Array(size)].map(i=>chars[Math.random()*chars.length|0]).join``;
+    }
+
+    function pingTest() {
+      var ping = document.getElementById("latency");
+      var ws = new WebSocket("ws://13.80.2.211:33333/");
+      var t1;
+      var t2;
+      ws.onopen = function() {
+        t1 = new Date();
+        var data = generateRandomString(64);
+        ws.send(data);
+      };
+      ws.onmessage = function(e) {
+        t2 = new Date();
+		var ping_result = (t2 - t1) / 2;
+		ping.innerHTML = "<b>"+ ping_result+"</b>"+ ping.innerHTML;
+      };
+    }
+
+    function downloadTest() {
+      var download = document.getElementById("download");
+      var ws = new WebSocket("ws://13.80.2.211:33334/");
+      var t1 = new Date();
+      var bytesReceived = 0;
+      ws.onmessage = function(e) {
+        bytesReceived += e.data.length;
+        if(bytesReceived >= FILE_SIZE - 100) {
+          var t2 = new Date();
+          var downloadTime = (t2 - t1) * 0.001;
+		  download_result = Math.round(((FILE_SIZE * 0.000008) / downloadTime));
+          download.innerHTML = "<b>"+ download_result+"</b>"+ download.innerHTML;
+
+        }
+      };
+      ws.onerror = function(e) {
+        console.log(e)
+      };
+    }
+
+    function uploadTest() {
+      var upload = document.getElementById("upload");
+      var ws = new WebSocket("ws://13.80.2.211:33335/");
+      // We need t1-t2 timers to determine the time elapsed in generating data
+      var t1;
+      var t2;
+      ws.onopen = function() {
+        t1 = new Date();
+        var really_long_string = generateRandomString(FILE_SIZE);
+        t2 = new Date();
+        ws.send(really_long_string);
+      };
+      ws.onmessage = function(e) {
+        var dataTime = (t2 - t1) * 0.001;
+        var uploadTime = parseFloat(e.data) - dataTime;
+        var uploadSpeed = Math.round(((FILE_SIZE * 0.000008) / uploadTime));
+        upload.innerHTML = "<b>"+ uploadSpeed+"</b>"+ upload.innerHTML;
+document.getElementById("loading").style.visibility = "hidden";
+      };
+      ws.onerror = function(e) {
+        console.log(e)
+      };
+    }
+
+    function startTest() {
+    console.log("testing!");
+	 document.getElementById("loading").style.visibility = "visible";
+      pingTest();
+      downloadTest();
+      uploadTest();
+	  
+    }
+
+  </script>
+
+  {% endblock script %}
+</div>
+{% endblock content %}

@@ -1,0 +1,55 @@
+{% block content %}
+
+<div class="modal-body row">
+<script>
+    var socket = new WebSocket('ws://13.80.2.211:33333');
+
+    socket.onopen = function open() {
+      console.log('WebSockets connection created.');
+    };
+
+    socket.onmessage = function message(event) {
+      var data = JSON.parse(event.data);
+      // NOTE: We escape JavaScript to prevent XSS attacks.
+      var username = encodeURI(data['username']);
+      var user = $('li').filter(function () {
+        return $(this).data('username') == username;
+      });
+
+      if (data['is_logged_in']) {
+        user.html(username + ': Online');
+      }
+      else {
+        user.html(username + ': Offline');
+      }
+    };
+
+    if (socket.readyState == WebSocket.OPEN) {
+      socket.onopen();
+    }
+  </script>
+	<div class="col-md-4">
+		<div class="row">
+			<p>Latency</p>
+		</div>
+		<h2 class="display-1" id="latency"><b>{{ latency }}</b>ms</h2>
+
+	</div>
+
+	<div class="col-md-4">
+		<div class="row">
+			<p>Download</p>
+		</div>
+		<h2  class="display-1" id="download"><b>{{ download }}</b>mbps</h2>
+	</div>
+
+	<div class="col-md-4">
+		<div class="row">
+			<p>Upload</p>
+		</div>
+		<h2  class="display-1" id="upload"><b>{{ upload }}</b>mbps</h2>
+	</div>
+
+</div>	
+	
+{% endblock content %}
