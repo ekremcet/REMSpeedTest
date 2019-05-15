@@ -16,6 +16,8 @@ You will need 3 instances of python program. There is a bash script that does th
 You will also need to host the website. To do that you need to run **manage.py** with sudo privileges. <br>
 > sudo python3 manage.py runserver 0.0.0.0:80
 
+If you want to measure TCP socket level speed, you can run **tcp_server.py** on the server and **tcp_client.py** on your client. 
+
 ## Running Tests
 Once the server is up, you can go to your server's public ip address in your browser and click the button to run tests. <br>
 Note that due to client side data sending size limitation, upload speed testing in Google Chrome does not work at the moment. We recommend using **Mozilla Firefox.** 
