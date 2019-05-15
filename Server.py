@@ -6,7 +6,6 @@ from _thread import start_new_thread
 
 FILE_SIZE = 25000000
 BUFFER_SIZE = 4096
-ONE_MB = 1000000
 
 
 class Server:
@@ -34,9 +33,9 @@ class Server:
             start_new_thread(self.client_thread, (client, ))
 
     def get_delay(self, client):
-        # Client sends a packet to server, server sends back a packet as soon as it recieves that
+        # Client sends a packet to server, server sends back a packet as soon as it receives that packet
         # Time passed between 2 received packets are calculated and divided by two to obtain RTT
-        # This process is repeated 10 times
+        # This process is repeated 10 times to obtain more reliable results
         print("Delay Test")
         rtt = 0.0
         for _ in range(10):
@@ -48,21 +47,24 @@ class Server:
 
     @staticmethod
     def get_pings(client):
-        send_time = time.time()
+        t1 = time.time()
         msg = client.recv(BUFFER_SIZE)
         client.send(msg)
-        recv_time = time.time()
+        t2 = time.time()
 
-        return (recv_time - send_time) * 1000
+        return (t2 - t1) * 1000
 
     @staticmethod
     def generate_random_data(size):
+        # Generate random string with given size in bytes
         alphabet = string.ascii_uppercase + string.ascii_lowercase
 
         return ''.join(random.choice(alphabet) for _ in range(size))
 
     @staticmethod
     def get_download_speed(client):
+        # Send a 25MB randomly generated file to client
+        # Speed calculation is done in client side and sent back to server
         print("Download Test")
         download_file = open("./downfile", "rb")
         buff = download_file.read()
@@ -79,6 +81,8 @@ class Server:
 
     @staticmethod
     def get_upload_speed(client):
+        # Receive a 25MB randomly generated file from client
+        # Speed calculation is done in server side
         print("UPLOAD")
         bytes_recieved = 0
         t1 = time.time()
@@ -89,12 +93,13 @@ class Server:
                 break
 
         t2 = time.time()
-        upload_speed = str(round(((FILE_SIZE * 0.001) / (t2 - t1)) * 0.001) * 8)
+        upload_speed = str(round(((FILE_SIZE / (t2 - t1)) * 0.000001) * 8))
         print("Upload speed: %s Mbps" % upload_speed)
 
         return upload_speed
 
     def client_thread(self, client):
+        # First 4 bytes in connection is the test type
         request = client.recv(4).decode("ascii")
         requests = {"Ping": self.get_delay,
                     "Down": self.get_download_speed,
