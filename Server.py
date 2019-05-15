@@ -41,9 +41,7 @@ class Server:
         for _ in range(10):
             rtt += self.get_pings(client)
         ping = rtt / 20
-        print("Ping: %.2f" % ping)
-
-        return ping
+        client.send(str(round(ping)).encode("ascii"))
 
     @staticmethod
     def get_pings(client):

@@ -74,6 +74,10 @@ class Client:
         self.server_sock.send("Ping".encode("ascii"))
         for _ in range(10):
             self.send_ping()
+        ping = self.server_sock.recv(BUFFER_SIZE).decode("ascii")
+        print("Ping test complete")
+
+        return ping
 
     def run_tests(self):
         # Initialize new connection for each test to obtain more reliable results
