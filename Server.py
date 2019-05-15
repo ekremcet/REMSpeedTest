@@ -84,5 +84,5 @@ class Server:
 
 
 if __name__ == '__main__':
-    upload_server = Server("0.0.0.0", int(sys.argv[1]))
-    upload_server.start_server(type=sys.argv[2])
+    server = Server("0.0.0.0", int(sys.argv[1]))
+    server.start_server(type=sys.argv[2])
