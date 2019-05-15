@@ -50,11 +50,13 @@ class Client:
         # Divide it by 10^6 to convert it from Bytes per second to MBps
         # Multiply by 8 to convert it from MBps to Mbps
         download_speed = round(((FILE_SIZE / (t2 - t1)) * 0.000001) * 8)
-        self.server_sock.send(str(download_speed).encode("ascii"))
         print("Download test complete")
+
+        return download_speed
 
     def upload_test(self):
         # First send the test type header to server and send the downloaded file
+        # Once the file is sent receive upload speed from server
         self.server_sock.send("Upld".encode("ascii"))
         test_file = open("./uploadfile", "rb")
         buff = test_file.read()
@@ -63,7 +65,10 @@ class Client:
             self.server_sock.send(buff)
             buff = test_file.read()
         test_file.close()
+        upload_speed = self.server_sock.recv(BUFFER_SIZE).decode("ascii")
         print("Upload test complete")
+
+        return upload_speed
 
     def ping_test(self):
         self.server_sock.send("Ping".encode("ascii"))

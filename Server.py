@@ -64,7 +64,7 @@ class Server:
     @staticmethod
     def get_download_speed(client):
         # Send a 25MB randomly generated file to client
-        # Speed calculation is done in client side and sent back to server
+        # Speed calculation is done in client side
         print("Download Test")
         download_file = open("./downfile", "rb")
         buff = download_file.read()
@@ -74,16 +74,12 @@ class Server:
             buff = download_file.read()
 
         download_file.close()
-        download_speed = client.recv(BUFFER_SIZE).decode("ascii")
-        print("Download speed %s Mbps" % download_speed)
-
-        return download_speed
 
     @staticmethod
     def get_upload_speed(client):
         # Receive a 25MB randomly generated file from client
-        # Speed calculation is done in server side
-        print("UPLOAD")
+        # Speed calculation is done in server side and then sent to client
+        print("Upload Test")
         bytes_recieved = 0
         t1 = time.time()
         while True:
@@ -94,9 +90,7 @@ class Server:
 
         t2 = time.time()
         upload_speed = str(round(((FILE_SIZE / (t2 - t1)) * 0.000001) * 8))
-        print("Upload speed: %s Mbps" % upload_speed)
-
-        return upload_speed
+        client.send(str(upload_speed).encode("ascii"))
 
     def client_thread(self, client):
         # First 4 bytes in connection is the test type
