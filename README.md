@@ -1,4 +1,4 @@
-# REMSpeed -  Network Speed Testing Using Python TCP Sockets
+# REMSpeed -  Network Speed Testing Using Websockets
 
 REMSpeed is a network speed testing tool written in Python and JavaScript. It allows you to measure your ping, download and upload speeds by using minimal amount of data.
 
