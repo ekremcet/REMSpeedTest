@@ -1,0 +1,87 @@
+<html>
+<head>
+  <title>REMSpeed</title>
+
+  <script type="text/javascript">
+    var FILE_SIZE = 10000050;
+
+    function generateRandomString(size) {
+      const chars = [..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+      return [...Array(size)].map(i=>chars[Math.random()*chars.length|0]).join``;
+    }
+
+    function pingTest() {
+      var ws = new WebSocket("ws://13.80.2.211:33333/");
+      var t1;
+      var t2;
+      ws.onopen = function() {
+        t1 = new Date();
+        var data = generateRandomString(64);
+        ws.send(data);
+      };
+      ws.onmessage = function(e) {
+        t2 = new Date();
+        output("Ping: " + (t2 - t1) / 2);
+      };
+    }
+
+    function downloadTest() {
+      var ws = new WebSocket("ws://13.80.2.211:33334/");
+      var t1 = new Date();
+      var bytesReceived = 0;
+      ws.onmessage = function(e) {
+        bytesReceived += e.data.length;
+        if(bytesReceived >= FILE_SIZE - 100) {
+          var t2 = new Date();
+          var downloadTime = (t2 - t1) * 0.001;
+          output("Download Speed: " + Math.round(((FILE_SIZE * 0.000008) / downloadTime)));
+        }
+      };
+      ws.onerror = function(e) {
+        output("onerror");
+        console.log(e)
+      };
+    }
+
+    function uploadTest() {
+      var ws = new WebSocket("ws://13.80.2.211:33335/");
+      // We need t1-t2 timers to determine the time elapsed in generating data
+      var t1;
+      var t2;
+      ws.onopen = function() {
+        t1 = new Date();
+        var really_long_string = generateRandomString(FILE_SIZE);
+        t2 = new Date();
+        ws.send(really_long_string);
+      };
+      ws.onmessage = function(e) {
+        var dataTime = (t2 - t1) * 0.001;
+        var uploadTime = parseFloat(e.data) - dataTime;
+        var uploadSpeed = Math.round(((FILE_SIZE * 0.000008) / uploadTime));
+        output("Upload Speed: " + uploadSpeed);
+      };
+      ws.onerror = function(e) {
+        output("onerror");
+        console.log(e)
+      };
+    }
+
+    function startTest() {
+      pingTest();
+      downloadTest();
+      uploadTest();
+    }
+
+    function output(str) {
+      var log = document.getElementById("log");
+      var escaped = str.replace(/&/, "&amp;").replace(/</, "&lt;").
+        replace(/>/, "&gt;").replace(/"/, "&quot;"); // "
+      log.innerHTML = escaped + "<br>" + log.innerHTML;
+    }
+  </script>
+</head>
+<body>
+  <button onclick="startTest(); return false;">Run</button>
+  <div id="log"></div>
+</body>
+</html>
