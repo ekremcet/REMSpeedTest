@@ -14,7 +14,7 @@ class Server:
         #self.generate_file()
 
     def generate_file(self):
-        # Generate 10 MB file with random strings in each run
+        # Generate 10 MB file with random strings
         # This is done to prevent caching
         data = self.generate_random_data(FILE_SIZE)
         with open("./downfile", "w") as f:
@@ -67,6 +67,7 @@ class Server:
 
     def get_upload_speed(self, client):
         # Receive a 10MB randomly generated data from client
+        # Send the elapsed time to client when the file is received
         # Speed calculation is done in client side
         print("Upload Test")
         self.bytes_received = 0

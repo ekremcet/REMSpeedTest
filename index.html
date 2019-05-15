@@ -6,11 +6,15 @@
     var FILE_SIZE = 10000050;
 
     function generateRandomString(size) {
+      // Generate random sized strings to be sent
+      // This is done to prevent caching
       const chars = [..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"];
       return [...Array(size)].map(i=>chars[Math.random()*chars.length|0]).join``;
     }
 
     function pingTest() {
+      // Send a packet to server and receive a respons immediately
+      // Delay is the time passed / 2 (RTT + RTT)
       var ws = new WebSocket("ws://13.80.2.211:33333/");
       var t1;
       var t2;
@@ -26,6 +30,8 @@
     }
 
     function downloadTest() {
+      // Receive the data from server and measure elapsed time
+      // Result is Mbps
       var ws = new WebSocket("ws://13.80.2.211:33334/");
       var t1 = new Date();
       var bytesReceived = 0;
@@ -44,6 +50,8 @@
     }
 
     function uploadTest() {
+      // Generate 10MB of random string and send it to server
+      // Receive elapsed time from server and measure upload speed
       var ws = new WebSocket("ws://13.80.2.211:33335/");
       // We need t1-t2 timers to determine the time elapsed in generating data
       var t1;
