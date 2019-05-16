@@ -10,7 +10,6 @@
 
     socket.onmessage = function message(event) {
       var data = JSON.parse(event.data);
-      // NOTE: We escape JavaScript to prevent XSS attacks.
       var username = encodeURI(data['username']);
       var user = $('li').filter(function () {
         return $(this).data('username') == username;
