@@ -32,7 +32,6 @@ class Server:
     def get_delay(self, client):
         # Client sends a packet to server, server sends back a packet as soon as it receives that packet
         # Time passed between 2 received packets are calculated and divided by two to obtain RTT
-        # This process is repeated 10 times to obtain more reliable results
         print("Delay Test")
         self.sock.set_fn_message_received(self.get_ping)
 
