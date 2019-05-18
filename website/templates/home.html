@@ -52,8 +52,8 @@
       };
       ws.onmessage = function(e) {
         t2 = new Date();
-		var ping_result = (t2 - t1) / 2;
-		ping.innerHTML = "<b>"+ ping_result+"</b>"+ ping.innerHTML;
+		  var ping_result = (t2 - t1) / 2;
+		  ping.innerHTML = "<b>"+ ping_result+"</b>"+ ping.innerHTML;
       };
     }
 
@@ -69,9 +69,8 @@
         if(bytesReceived >= FILE_SIZE - 100) {
           var t2 = new Date();
           var downloadTime = (t2 - t1) * 0.001;
-		  download_result = Math.round(((FILE_SIZE * 0.000008) / downloadTime));
+		      download_result = Math.round(((FILE_SIZE * 0.000008) / downloadTime));
           download.innerHTML = "<b>"+ download_result+"</b>"+ download.innerHTML;
-
         }
       };
       ws.onerror = function(e) {
@@ -80,6 +79,7 @@
     }
 
     function uploadTest() {
+      // Generate 10MB of random string and send it to server
       // Generate 10MB of random string and send it to server
       // Receive elapsed time from server and measure upload speed
       var upload = document.getElementById("upload");
